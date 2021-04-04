@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,7 +12,31 @@ import (
 	"strings"
 )
 
-
+/**
+DownloadFile allows you to download a file from the internet to your local file
+system.
+*/
+func DownloadFile(url string, filepath string) error {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	// Here we provide a fake 'user-agent' value so that our request looks like it's from a browser.
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0")
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
 
 /**
 CopyFile allows you to copy a file from one source location to a target
@@ -60,7 +85,21 @@ func WriteBytesToFile(fileName string, bytesToWrite []byte, permissions int) err
 }
 
 /**
-AppendStringToFile allows you to append a string to the end of a file.
+GetFileContentsAsBytes allows you to get the contents of a file as a byte
+array.
+*/
+func GetFileContentsAsBytes(fileName string) ([]byte, error) {
+	var fileContents []byte
+	var err error
+	fileContents, err = ioutil.ReadFile(fileName)
+	if err != nil {
+		return fileContents, err
+	}
+	return fileContents, err
+}
+
+/**
+AppendLineToFile allows you to append a line to the end of a file.
 In addition, the following information should be noted:
 
 - In the event the file does not already exist, it will be created for you
@@ -69,7 +108,7 @@ with the permission attributes provided.
 - If you pass in a permissions value of '0', the default value of 666 will
 be used instead.
 */
-func AppendStringToFile(fileName string, lineToWrite string, permissions int) error {
+func AppendLineToFile(fileName string, lineToWrite string, permissions int) error {
 	if permissions == 0 {
 		permissions = 666
 	}
@@ -167,7 +206,7 @@ func GetFileSize(fileName string) (int64, error){
 GetWorkingDirectory allows you to obtain the current working directory
 where your program is executing.
 */
-func GetWorkingDirectory(directoryPath string) (string, error) {
+func GetWorkingDirectory() (string, error) {
 	var parent string
 	workingDirectory, err := os.Getwd()
 	if err != nil {
