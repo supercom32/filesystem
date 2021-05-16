@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -226,7 +226,7 @@ func GetParentDirectory(fileOrDirectoryPath string) string {
 	if strings.HasSuffix(fileOrDirectoryPath, "/") || strings.HasSuffix(fileOrDirectoryPath, "\\") {
 		normalizedDirectory = normalizedDirectory[:len(normalizedDirectory)-1]
 	}
-	parentDirectory := path.Dir(normalizedDirectory)
+	parentDirectory := filepath.Dir(normalizedDirectory)
 	return parentDirectory
 }
 
@@ -236,16 +236,25 @@ that a file with the same name already exists, it will be overwritten. Here we
 explicitly do the delete so we don't depend on the 'os.Rename' behaviour of
 overwriting files which may be environment dependant.
 */
-func RenameFile(sourceFile string, targetFile string) error {
-	if sourceFile != targetFile {
-		if IsDirectoryExists(targetFile) {
-			err := DeleteFile(targetFile)
-			if err != nil {
-				return err
-			}
-		}
+func RenameFile(sourceFileName string, targetFileName string) error {
+	var err error
+	if sourceFileName == targetFileName {
+		return err
 	}
-	err := os.Rename(sourceFile, targetFile)
+	if IsFileExists(targetFileName) {
+		DeleteFile(targetFileName)
+	}
+	// Since Windows is case insensitive we check if the names are identical, we
+	// give the file a temporary name before we request to rename it properly.
+	if runtime.GOOS == "windows" && strings.ToLower(sourceFileName) == strings.ToLower(targetFileName) {
+		err = os.Rename(sourceFileName, targetFileName + ".tmp")
+		if err != nil {
+			return err
+		}
+		err = os.Rename(targetFileName + ".tmp", targetFileName)
+		return err
+	}
+	err = os.Rename(sourceFileName, targetFileName)
 	return err
 }
 
@@ -302,14 +311,12 @@ func DeleteFilesMatchingPattern(fileName string ) error {
 }
 
 /**
-MoveFile allows you to move a file from one location to another. If the copy
-action was successful, the source file is removed from the file system.
+MoveFile allows you to move a file from one location to another. This method
+is an alias which simply performs a rename command, which is capable of doing
+the same action.
 */
 func MoveFile(sourceFile string, destinationFile string) error {
-	err := CopyFile(sourceFile, destinationFile)
-	if err == nil {
-		err = DeleteFile(sourceFile)
-	}
+	err := RenameFile(sourceFile, destinationFile)
 	return err
 }
 
@@ -343,7 +350,7 @@ func GetBaseFileName(fileName string) string {
 GetBaseDirectory allows you to extract the directory from a file path.
 */
 func GetBaseDirectory(filePath string) string {
-	directory, _ := path.Split(filePath)
+	directory, _ := filepath.Split(filePath)
 	return directory
 }
 
