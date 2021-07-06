@@ -139,7 +139,7 @@ func GetListOfDirectories(directoryPath string, regexMatcher string) ([]string, 
 GetListOfDirectoryContents allows you to obtain a list of files and directories
 that match a given regular expression.
 */
-func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFilesListed bool, isDirectoriesListed bool) ([]string, error) {
+func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFilesIncluded bool, isDirectoriesIncluded bool) ([]string, error) {
 	var fileList []string
 	files, err := ioutil.ReadDir(directoryPath)
 	if err != nil {
@@ -149,15 +149,57 @@ func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFil
 		regex := regexp.MustCompile(regexMatcher)
 		match := regex.FindStringSubmatch(file.Name())
 		if len(match) > 0 {
-			if file.IsDir() && isDirectoriesListed {
+			if file.IsDir() && isDirectoriesIncluded {
 				fileList = append(fileList, file.Name())
 			}
-			if !file.IsDir() && isFilesListed {
+			if !file.IsDir() && isFilesIncluded {
 				fileList = append(fileList, file.Name())
 			}
 		}
 	}
 	return fileList, err
+}
+
+/**
+FindMatchingContent allows you to find matching content from a given directory
+path. Both shallow and recursive searches are supported and results are
+returned as a fully qualified path.
+*/
+func FindMatchingContent(directoryPath string, regexMatcher string, isFilesIncluded bool, isDirectoriesIncluded bool, isRecursive bool) ([]string, error) {
+	var err error
+	var listOfContents []string
+	if isRecursive {
+		err = filepath.Walk(directoryPath,
+			func(path string, fileInfo os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				matchingContents, err := GetListOfDirectoryContents(path, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
+				if err != nil {
+					return err
+				}
+				matchingContents = addPrefixToStrings(path, matchingContents)
+				listOfContents = append(listOfContents, matchingContents...)
+				return nil
+			})
+	} else {
+		matchingContent, err := GetListOfDirectoryContents(directoryPath, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
+		if err != nil {
+			return listOfContents, err
+		}
+		listOfContents = addPrefixToStrings(directoryPath, matchingContent)
+	}
+	return listOfContents, err
+}
+
+/**
+addPrefixToStrings allows you to append a prefix to an array of strings.
+*/
+func addPrefixToStrings(prefixToAdd string, stringArray []string) []string {
+	for currentStringIndex := 0; currentStringIndex < len(stringArray); currentStringIndex++ {
+		stringArray[currentStringIndex] = prefixToAdd + stringArray[currentStringIndex]
+	}
+	return stringArray
 }
 
 /**
