@@ -12,6 +12,78 @@ import (
 	"strings"
 )
 
+type fileInstanceType struct {
+	fileDescriptor *os.File
+}
+
+/*
+Open allows you to access a file on the file system in the open state.
+*/
+func (shared *fileInstanceType) Open(fileName string, permissions int) error {
+	if permissions == 0 {
+		permissions = 0644
+	}
+	perm := os.FileMode(uint32(permissions))
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, perm)
+	if err != nil {
+		return err
+	}
+	shared.fileDescriptor = file
+	return err
+}
+
+/*
+GetFileInstance allows you to obtain a file instance to work on.
+*/
+func GetFileInstance() fileInstanceType {
+	var fileInstance fileInstanceType
+	return fileInstance
+}
+
+/*
+Close allows you to close a file which has already been opened.
+*/
+func (shared *fileInstanceType) Close() {
+	if shared.fileDescriptor == nil {
+		panic("There is no open file to close.")
+	}
+	shared.fileDescriptor.Close()
+}
+
+/*
+WriteBytes allows you to add an arbitrary number of bytes to an open file.
+*/
+func (shared *fileInstanceType) WriteBytes(bytes []byte) error {
+	if shared.fileDescriptor == nil {
+		panic("There is no open file for writing bytes to.")
+	}
+	_, err := shared.fileDescriptor.Write(bytes)
+	return err
+}
+
+/*
+WriteLine allows you to add string data to an open file as a line. A newline
+identifier will automatically be added to your string.
+*/
+func (shared *fileInstanceType) WriteLine(lineToWrite string) error {
+	if shared.fileDescriptor == nil {
+		panic("There is no open file for writing lines to.")
+	}
+	err := shared.WriteString(lineToWrite + "\n")
+	return err
+}
+
+/*
+WriteString allows you to add string data to an open file.
+*/
+func (shared *fileInstanceType) WriteString(stringToWrite string) error {
+	if shared.fileDescriptor == nil {
+		panic("There is no open file for writing strings to.")
+	}
+	_, err := shared.fileDescriptor.WriteString(stringToWrite)
+	return err
+}
+
 /**
 DownloadFile allows you to download a file from the internet to your local file
 system.
@@ -110,7 +182,7 @@ be used instead.
 */
 func AppendLineToFile(fileName string, lineToWrite string, permissions int) error {
 	if permissions == 0 {
-		permissions = 666
+		permissions = 0644
 	}
 	perm := os.FileMode(uint32(permissions))
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, perm)

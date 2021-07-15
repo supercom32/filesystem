@@ -12,6 +12,30 @@ func TestDownloadFile(test *testing.T) {
 	assert.NoErrorf(test, err, "An error was not expected to be generated when downloading!")
 }
 
+func TestFileOperations(test *testing.T) {
+	var file fileInstanceType
+	filename := "/tmp/file.txt"
+	if IsFileExists(filename) {
+		DeleteFile(filename)
+	}
+	err := file.Open(filename, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when opening a file.")
+	}
+	err = file.WriteBytes([]byte{255,255,255})
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing bytes to a file.")
+	}
+	err = file.WriteString("\nNew line\n")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing a string to a file.")
+	}
+	file.Close()
+	assert.True(test, IsFileExists(filename), "A text file was expected to exist when it doesn't.")
+	fileSize, _:= GetFileSize(filename)
+	assert.Equalf(test, int64(13), fileSize, "The text file was expected to be a size it wasn't.")
+}
+
 func TestCopyFile(test *testing.T) {
 	sourceFile := "/tmp/source.txt"
 	targetFile := "/tmp/target.txt"
