@@ -12,6 +12,48 @@ func TestDownloadFile(test *testing.T) {
 	assert.NoErrorf(test, err, "An error was not expected to be generated when downloading!")
 }
 
+func TestPopLineFromStack(test *testing.T) {
+	var file fileInstanceType
+	filename := "/tmp/file.txt"
+	if IsFileExists(filename) {
+		DeleteFile(filename)
+	}
+	err := file.Open(filename, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when opening a file.")
+	}
+	err = file.WriteLine("First written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	err = file.WriteLine("Second written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	err = file.WriteLine("Third written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	file.Close()
+	err = file.Open(filename, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when opening a file.")
+	}
+	file.PopLineFromStack()
+	file.Close()
+	fileSize, _:= GetFileSize(filename)
+	assert.Equalf(test, int64(41), fileSize, "The text file was expected to be a size it wasn't.")
+	err = file.Open(filename, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when opening a file.")
+	}
+	obtainedResult, err := file.GetFirstLineFromStack()
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected obtaining the first line of a file.")
+	}
+	assert.Equal(test, "Second written line.", string(obtainedResult), "The first line read was not as expected.")
+}
+
 func TestFileOperations(test *testing.T) {
 	var file fileInstanceType
 	filename := "/tmp/file.txt"

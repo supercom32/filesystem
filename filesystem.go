@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,6 +18,14 @@ type fileInstanceType struct {
 }
 
 /*
+GetFileInstance allows you to obtain a file instance to work on.
+*/
+func GetFileInstance() fileInstanceType {
+	var fileInstance fileInstanceType
+	return fileInstance
+}
+
+/*
 Open allows you to access a file on the file system in the open state.
 */
 func (shared *fileInstanceType) Open(fileName string, permissions int) error {
@@ -30,14 +39,6 @@ func (shared *fileInstanceType) Open(fileName string, permissions int) error {
 	}
 	shared.fileDescriptor = file
 	return err
-}
-
-/*
-GetFileInstance allows you to obtain a file instance to work on.
-*/
-func GetFileInstance() fileInstanceType {
-	var fileInstance fileInstanceType
-	return fileInstance
 }
 
 /*
@@ -82,6 +83,72 @@ func (shared *fileInstanceType) WriteString(stringToWrite string) error {
 	}
 	_, err := shared.fileDescriptor.WriteString(stringToWrite)
 	return err
+}
+
+func (shared *fileInstanceType) GetFirstLineFromStack() ([]byte, error) {
+	fileInfo, err := shared.fileDescriptor.Stat()
+	if err != nil {
+		return nil, err
+	}
+	_, err = shared.fileDescriptor.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	buffer := bytes.NewBuffer(make([]byte, 0, fileInfo.Size()))
+	_, err = io.Copy(buffer, shared.fileDescriptor)
+	if err != nil {
+		return nil, err
+	}
+	firstLine, err := buffer.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	_, err = shared.fileDescriptor.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+	return firstLine[:len(firstLine) - 1], err // Remove trailing delimiter "\n"
+}
+
+func (shared *fileInstanceType) PopLineFromStack() error{
+	fileInfo, err := shared.fileDescriptor.Stat()
+	if err != nil {
+		return err
+	}
+	_, err = shared.fileDescriptor.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+	buffer := bytes.NewBuffer(make([]byte, 0, fileInfo.Size()))
+	_, err = io.Copy(buffer, shared.fileDescriptor)
+	if err != nil {
+		return err
+	}
+	_, err = buffer.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		return err
+	}
+	err = shared.fileDescriptor.Truncate(0)
+	if err != nil {
+		return err
+	}
+	_, err = shared.fileDescriptor.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(shared.fileDescriptor, buffer)
+	if err != nil {
+		return err
+	}
+	err = shared.fileDescriptor.Sync()
+	if err != nil {
+		return err
+	}
+	_, err = shared.fileDescriptor.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /**
