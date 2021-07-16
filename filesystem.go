@@ -377,7 +377,7 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 				if err != nil {
 					return err
 				}
-				matchingContents = addPrefixToStrings(path, matchingContents)
+				matchingContents = addPrefixToStrings(path + "/", matchingContents)
 				listOfContents = append(listOfContents, matchingContents...)
 				return nil
 			})
@@ -386,7 +386,7 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 		if err != nil {
 			return listOfContents, err
 		}
-		listOfContents = addPrefixToStrings(directoryPath, matchingContent)
+		listOfContents = addPrefixToStrings(directoryPath + "/", matchingContent)
 	}
 	return listOfContents, err
 }
