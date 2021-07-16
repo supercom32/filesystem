@@ -337,7 +337,8 @@ that match a given regular expression.
 */
 func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFilesIncluded bool, isDirectoriesIncluded bool) ([]string, error) {
 	var fileList []string
-	files, err := ioutil.ReadDir(directoryPath)
+	bareDirectoryPath := GetBareDirectoryPath(directoryPath)
+	files, err := ioutil.ReadDir(bareDirectoryPath)
 	if err != nil {
 		return fileList, err
 	}
@@ -414,6 +415,20 @@ func GetNormalizedDirectoryPath(directoryPath string) string {
 		normalizedDirectoryPath = normalizedDirectoryPath + "/"
 	}
 	return normalizedDirectoryPath
+}
+
+/*
+GetBareDirectoryPath allows you to get a directory path without a trailing
+slash. This is useful for functions which explicitly need directories
+formatted this way.
+*/
+func GetBareDirectoryPath(directoryPath string) string {
+	var bareDirectoryPath string = directoryPath
+	if strings.HasSuffix(directoryPath, "/")  || strings.HasSuffix(directoryPath, "\\") {
+		bareDirectoryPath = strings.TrimSuffix(directoryPath, "/")
+		bareDirectoryPath = strings.TrimSuffix(directoryPath, "\\")
+	}
+	return bareDirectoryPath
 }
 
 /**
