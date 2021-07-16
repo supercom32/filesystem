@@ -373,11 +373,12 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 				if !IsDirectory(path) {
 					return nil
 				}
-				matchingContents, err := GetListOfDirectoryContents(path, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
+				normalizedPath := GetNormalizedDirectoryPath(path)
+				matchingContents, err := GetListOfDirectoryContents(normalizedPath, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
 				if err != nil {
 					return err
 				}
-				matchingContents = addPrefixToStrings(path + "/", matchingContents)
+				matchingContents = addPrefixToStrings(normalizedPath, matchingContents)
 				listOfContents = append(listOfContents, matchingContents...)
 				return nil
 			})
@@ -386,7 +387,8 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 		if err != nil {
 			return listOfContents, err
 		}
-		listOfContents = addPrefixToStrings(directoryPath + "/", matchingContent)
+		normalizedPath := GetNormalizedDirectoryPath(directoryPath)
+		listOfContents = addPrefixToStrings(normalizedPath, matchingContent)
 	}
 	return listOfContents, err
 }
