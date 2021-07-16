@@ -496,23 +496,25 @@ overwriting files which may be environment dependant.
 */
 func RenameFile(sourceFileName string, targetFileName string) error {
 	var err error
-	if sourceFileName == targetFileName {
+	bareSourceFileName := GetBareDirectoryPath(sourceFileName)
+	bareTargetFileName := GetBareDirectoryPath(targetFileName)
+	if bareSourceFileName == bareTargetFileName {
 		return err
 	}
-	if IsFileExists(targetFileName) {
-		DeleteFile(targetFileName)
+	if IsFileExists(bareTargetFileName) {
+		DeleteFile(bareTargetFileName)
 	}
 	// Since Windows is case insensitive we check if the names are identical, we
 	// give the file a temporary name before we request to rename it properly.
-	if runtime.GOOS == "windows" && strings.ToLower(sourceFileName) == strings.ToLower(targetFileName) {
-		err = os.Rename(sourceFileName, targetFileName + ".tmp")
+	if runtime.GOOS == "windows" && strings.ToLower(bareSourceFileName) == strings.ToLower(bareTargetFileName) {
+		err = os.Rename(bareSourceFileName, bareTargetFileName + ".tmp")
 		if err != nil {
 			return err
 		}
-		err = os.Rename(targetFileName + ".tmp", targetFileName)
+		err = os.Rename(bareTargetFileName + ".tmp", bareTargetFileName)
 		return err
 	}
-	err = os.Rename(sourceFileName, targetFileName)
+	err = os.Rename(bareSourceFileName, bareTargetFileName)
 	return err
 }
 
