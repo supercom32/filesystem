@@ -85,7 +85,29 @@ func (shared *fileInstanceType) WriteString(stringToWrite string) error {
 	return err
 }
 
-func (shared *fileInstanceType) GetFirstLineFromStack() ([]byte, error) {
+/*
+GetFileContents allows you to get the entire file contents.
+*/
+func (shared *fileInstanceType) GetFileContents() ([]byte, error) {
+	if shared.fileDescriptor == nil {
+		panic("There is no open file for reading with.")
+	}
+	fileInfo, err := shared.fileDescriptor.Stat()
+	if err != nil {
+		return nil, err
+	}
+	buffer := make([]byte, fileInfo.Size())
+	_, err = shared.fileDescriptor.ReadAt(buffer, 0)
+	if err != nil {
+		return nil, err
+	}
+	return buffer, err
+}
+
+/*
+GetFirstLine allows you to get the first line from a text file.
+*/
+func (shared *fileInstanceType) GetFirstLine() ([]byte, error) {
 	fileInfo, err := shared.fileDescriptor.Stat()
 	if err != nil {
 		return nil, err
@@ -110,7 +132,10 @@ func (shared *fileInstanceType) GetFirstLineFromStack() ([]byte, error) {
 	return firstLine[:len(firstLine) - 1], err // Remove trailing delimiter "\n"
 }
 
-func (shared *fileInstanceType) PopLineFromStack() error{
+/*
+RemoveFirstLine allows you to remove the first line from a text file.
+*/
+func (shared *fileInstanceType) RemoveFirstLine() error{
 	fileInfo, err := shared.fileDescriptor.Stat()
 	if err != nil {
 		return err
