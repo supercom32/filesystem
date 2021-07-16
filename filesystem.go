@@ -346,7 +346,7 @@ func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFil
 		match := regex.FindStringSubmatch(file.Name())
 		if len(match) > 0 {
 			if file.IsDir() && isDirectoriesIncluded {
-				fileList = append(fileList, file.Name())
+				fileList = append(fileList, file.Name() + "/")
 			}
 			if !file.IsDir() && isFilesIncluded {
 				fileList = append(fileList, file.Name())
