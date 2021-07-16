@@ -176,6 +176,23 @@ func (shared *fileInstanceType) RemoveFirstLine() error{
 	return nil
 }
 
+/*
+GetLinesFromFile allows you to get the entire contents of a text file.
+*/
+func GetLinesFromFile(fileName string) ([]byte, error) {
+	file := GetFileInstance()
+	err := file.Open(fileName, 0)
+	if err != nil {
+		return nil, err
+	}
+	fileContents, err := file.GetFileContents()
+	if err != nil {
+		return nil, err
+	}
+	file.Close()
+	return fileContents, err
+}
+
 /**
 DownloadFile allows you to download a file from the internet to your local file
 system.

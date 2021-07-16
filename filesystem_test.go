@@ -12,6 +12,36 @@ func TestDownloadFile(test *testing.T) {
 	assert.NoErrorf(test, err, "An error was not expected to be generated when downloading!")
 }
 
+func TestGetLinesFromFile(test *testing.T) {
+	var file fileInstanceType
+	filename := "/tmp/file.txt"
+	if IsFileExists(filename) {
+		DeleteFile(filename)
+	}
+	err := file.Open(filename, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when opening a file.")
+	}
+	err = file.WriteLine("First written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	err = file.WriteLine("Second written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	err = file.WriteLine("Third written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	file.Close()
+	fileContents, err := GetLinesFromFile(filename)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when getting lines from a file.")
+	}
+	assert.Equalf(test, string(fileContents), "First written line.\nSecond written line.\nThird written line.\n", "The text file was expected to be a size it wasn't.")
+}
+
 func TestGetFileContents(test *testing.T) {
 	var file fileInstanceType
 	filename := "/tmp/file.txt"
