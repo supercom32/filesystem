@@ -177,9 +177,9 @@ func (shared *fileInstanceType) RemoveFirstLine() error{
 }
 
 /*
-GetLinesFromFile allows you to get the entire contents of a text file.
+GetFileContents allows you to get the entire contents of a file.
 */
-func GetLinesFromFile(fileName string) ([]byte, error) {
+func GetFileContents(fileName string) ([]byte, error) {
 	file := GetFileInstance()
 	err := file.Open(fileName, 0)
 	if err != nil {

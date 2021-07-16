@@ -35,7 +35,7 @@ func TestGetLinesFromFile(test *testing.T) {
 		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
 	}
 	file.Close()
-	fileContents, err := GetLinesFromFile(filename)
+	fileContents, err := GetFileContents(filename)
 	if err != nil {
 		assert.NoErrorf(test, err, "An error was not expected when getting lines from a file.")
 	}
