@@ -602,7 +602,8 @@ GetBaseFileName allows you to extract the base name of a file without any path o
 file extensions.
 */
 func GetBaseFileName(fileName string) string {
-	normalizedFileName := GetFileNameFromPath(fileName)
+	bareFileName := GetBareDirectoryPath(fileName)
+	normalizedFileName := GetFileNameFromPath(bareFileName)
 	return strings.TrimSuffix(normalizedFileName, filepath.Ext(normalizedFileName))
 }
 
@@ -610,7 +611,8 @@ func GetBaseFileName(fileName string) string {
 GetBaseDirectory allows you to extract the directory from a file path.
 */
 func GetBaseDirectory(filePath string) string {
-	directory, _ := filepath.Split(filePath)
+	bareFilePath := GetBareDirectoryPath(filePath)
+	directory, _ := filepath.Split(bareFilePath)
 	return directory
 }
 
