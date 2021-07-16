@@ -410,7 +410,7 @@ is always formatted with a trailing slash at the end. This is useful when
 you need to work with paths in predictable and consistent manner.
  */
 func GetNormalizedDirectoryPath(directoryPath string) string {
-	var normalizedDirectoryPath string = directoryPath
+	normalizedDirectoryPath := directoryPath
 	if !strings.HasSuffix(directoryPath, "/")  && !strings.HasSuffix(directoryPath, "\\") {
 		normalizedDirectoryPath = normalizedDirectoryPath + "/"
 	}
@@ -423,10 +423,10 @@ slash. This is useful for functions which explicitly need directories
 formatted this way.
 */
 func GetBareDirectoryPath(directoryPath string) string {
-	var bareDirectoryPath string = directoryPath
+	bareDirectoryPath := directoryPath
 	if strings.HasSuffix(directoryPath, "/")  || strings.HasSuffix(directoryPath, "\\") {
 		bareDirectoryPath = strings.TrimSuffix(directoryPath, "/")
-		bareDirectoryPath = strings.TrimSuffix(directoryPath, "\\")
+		bareDirectoryPath = strings.TrimSuffix(bareDirectoryPath, "\\")
 	}
 	return bareDirectoryPath
 }
