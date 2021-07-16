@@ -584,6 +584,9 @@ func MoveFile(sourceFile string, destinationFile string) error {
 CreateDirectory allows you to create a directory on your local file system.
 */
 func CreateDirectory(directoryPath string, permissions uint32) error {
+	if permissions == 0 {
+		permissions = 0644
+	}
 	perm := os.FileMode(permissions)
 	err := os.MkdirAll(directoryPath, perm)
 	return err
