@@ -5,6 +5,15 @@ import (
 	"testing"
 )
 
+func TestIsDirectory(test *testing.T) {
+	path := "/tmp/"
+	isDirectory := IsDirectory(path)
+	assert.Equalf(test, true, isDirectory, "The path provided should return as a directory.")
+	path = "/tmp/asdasds"
+	isDirectory = IsDirectory(path)
+	assert.Equalf(test, false, isDirectory, "The path provided should return as a directory.")
+}
+
 func TestDownloadFile(test *testing.T) {
 	err := DownloadFile("https://bad_url", "/tmp/download.txt")
 	assert.Errorf(test, err, "An error was expected to be generated when a bad URL is used!")
@@ -39,7 +48,7 @@ func TestGetLinesFromFile(test *testing.T) {
 	if err != nil {
 		assert.NoErrorf(test, err, "An error was not expected when getting lines from a file.")
 	}
-	assert.Equalf(test, string(fileContents), "First written line.\nSecond written line.\nThird written line.\n", "The text file was expected to be a size it wasn't.")
+	assert.Equalf(test,"First written line.\nSecond written line.\nThird written line.\n", string(fileContents), "The text file was expected to be a size it wasn't.")
 }
 
 func TestGetFileContents(test *testing.T) {
@@ -73,7 +82,7 @@ func TestGetFileContents(test *testing.T) {
 	if err != nil {
 		assert.NoErrorf(test, err, "An error was not expected when reading a file.")
 	}
-	assert.Equalf(test, string(fileContents), "First written line.\nSecond written line.\nThird written line.\n", "The text file was expected to be a size it wasn't.")
+	assert.Equalf(test, "First written line.\nSecond written line.\nThird written line.\n", string(fileContents), "The text file was expected to be a size it wasn't.")
 }
 func TestPopLineFromStack(test *testing.T) {
 	var file fileInstanceType

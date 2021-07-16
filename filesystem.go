@@ -316,6 +316,21 @@ func GetListOfDirectories(directoryPath string, regexMatcher string) ([]string, 
 	return GetListOfDirectoryContents(directoryPath, regexMatcher, false, true)
 }
 
+/*
+IsDirectory allows you to check if a disk entry is a directory or not.
+*/
+func IsDirectory(directoryPath string) bool {
+	file, err := os.Open(directoryPath)
+	if err != nil {
+		return false
+	}
+	fileInfo, err := file.Stat()
+	if fileInfo.IsDir() {
+		return true
+	}
+	return false
+}
+
 /**
 GetListOfDirectoryContents allows you to obtain a list of files and directories
 that match a given regular expression.
@@ -354,6 +369,9 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 			func(path string, fileInfo os.FileInfo, err error) error {
 				if err != nil {
 					return err
+				}
+				if !IsDirectory(path) {
+					return nil
 				}
 				matchingContents, err := GetListOfDirectoryContents(path, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
 				if err != nil {
