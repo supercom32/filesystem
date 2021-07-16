@@ -570,6 +570,17 @@ func DeleteFilesMatchingPattern(fileName string ) error {
 	return err
 }
 
+
+/*
+DeleteDirectory allows you to recursively remove a directory from the file
+system.
+*/
+func DeleteDirectory(pathName string) error {
+	err := os.RemoveAll(pathName)
+	return err
+}
+
+
 /**
 MoveFile allows you to move a file from one location to another. This method
 is an alias which simply performs a rename command, which is capable of doing

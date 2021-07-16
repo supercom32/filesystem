@@ -14,6 +14,35 @@ func TestIsDirectory(test *testing.T) {
 	assert.Equalf(test, false, isDirectory, "The path provided should return as a directory.")
 }
 
+func TestDeleteDirectory(test *testing.T) {
+	directory := "/tmp/dir_test"
+	subDirectory := "/tmp/dir_test/sub_dir"
+	err := CreateDirectory(directory, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when creating a directory.")
+	}
+	err = CreateDirectory(subDirectory, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when creating a sub directory.")
+	}
+	obtainedResult := IsDirectoryExists(directory)
+	expectedResult := true
+	assert.Equalf(test,expectedResult, obtainedResult, "The created directory was expected to exist.")
+	obtainedResult = IsDirectoryExists(subDirectory)
+	expectedResult = true
+	assert.Equalf(test,expectedResult, obtainedResult, "The created sub directory was expected to exist.")
+	err = DeleteDirectory(directory)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when deleting a directory")
+	}
+	obtainedResult = IsDirectoryExists(directory)
+	expectedResult = false
+	assert.Equalf(test,expectedResult, obtainedResult, "The delete directory was not expected to exist.")
+	obtainedResult = IsDirectoryExists(subDirectory)
+	expectedResult = false
+	assert.Equalf(test,expectedResult, obtainedResult, "The deleted directory was not expected to exist.")
+}
+
 func TestDownloadFile(test *testing.T) {
 	err := DownloadFile("https://bad_url", "/tmp/download.txt")
 	assert.Errorf(test, err, "An error was expected to be generated when a bad URL is used!")
