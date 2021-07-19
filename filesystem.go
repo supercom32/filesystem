@@ -177,6 +177,24 @@ func (shared *fileInstanceType) RemoveFirstLine() error{
 }
 
 /*
+FindReplaceInFile allows you to find and replace text from within a file. Since this method loads the entire
+contents of a file into memory, it should only be used for smaller files.
+*/
+func FindReplaceInFile(filename string, regexMatcher string, replacementValue string) error {
+	fileContents, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	regex := regexp.MustCompile(regexMatcher)
+	newContents := regex.ReplaceAll(fileContents, []byte(replacementValue))
+	err = ioutil.WriteFile(filename, newContents, 0)
+	if err != nil {
+		panic(err)
+	}
+	return err
+}
+
+/*
 GetFileContents allows you to get the entire contents of a file.
 */
 func GetFileContents(fileName string) ([]byte, error) {

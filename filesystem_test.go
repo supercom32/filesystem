@@ -2,8 +2,39 @@ package filesystem
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
+
+func TestFindReplaceInFile(test *testing.T) {
+	fileName := "/tmp/testDocument.txt"
+	if IsFileExists(fileName) {
+		DeleteFile(fileName)
+	}
+	AppendLineToFile(fileName, "This is a first test line\n", 0)
+	AppendLineToFile(fileName, "This is a second test line\n", 0)
+	AppendLineToFile(fileName, "This is a third test line\n", 0)
+	AppendLineToFile(fileName, "This is a -forth- test line\n", 0)
+	FindReplaceInFile(fileName, "-.*-", "REPLACED")
+	FindReplaceInFile(fileName, ".*second.*", "DELETED")
+	fileContents, err := GetFileContents(fileName)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when getting the contents of a file.")
+	}
+	expectedResult := true
+	obtainedResult := strings.Contains(string(fileContents), "REPLACED")
+	assert.Equalf(test, expectedResult, obtainedResult, "The word REPLACED was expected to be found in the file.")
+	expectedResult = true
+	obtainedResult = strings.Contains(string(fileContents), "DELETED")
+	assert.Equalf(test, expectedResult, obtainedResult, "The word DELETED was expected to be found in the file.")
+	expectedResult = false
+	obtainedResult = strings.Contains(string(fileContents), "second")
+	assert.Equalf(test, expectedResult, obtainedResult, "The word second was not expected to be found in the file.")
+	expectedResult = false
+	obtainedResult = strings.Contains(string(fileContents), "-forth-")
+	assert.Equalf(test, expectedResult, obtainedResult, "The word -forth- was not expected to be found in the file.")
+
+}
 
 func TestIsDirectory(test *testing.T) {
 	path := "/tmp/"
