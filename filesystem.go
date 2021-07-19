@@ -648,6 +648,17 @@ func GetBaseDirectory(filePath string) string {
 	return directory
 }
 
+/*
+GetCurrentDirectory allows you to obtain the current directory from a fully
+qualified directory path.
+*/
+func GetCurrentDirectory(directoryPath string) string {
+	basePath := GetBaseDirectory(directoryPath)
+	currentDirectory := strings.ReplaceAll(directoryPath, basePath, "")
+	return currentDirectory
+}
+
+
 /**
 GetFileNameFromPath allows you to extract a file name from a fully qualified file path.
 */

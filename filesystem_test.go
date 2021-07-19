@@ -6,6 +6,13 @@ import (
 	"testing"
 )
 
+func TestGetCurrentDirectory(test *testing.T) {
+	directory := "/tmp/directory1/directory2/This is a directory with spaces and . seperation"
+	obtainedResult := GetCurrentDirectory(directory)
+	expectedResult := "This is a directory with spaces and . seperation"
+	assert.Equalf(test, expectedResult, obtainedResult, "The current directory was not as expected.")
+}
+
 func TestFindReplaceInFile(test *testing.T) {
 	fileName := "/tmp/testDocument.txt"
 	if IsFileExists(fileName) {
