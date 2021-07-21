@@ -519,9 +519,6 @@ func RenameFile(sourceFileName string, targetFileName string) error {
 	if bareSourceFileName == bareTargetFileName {
 		return err
 	}
-	if IsFileExists(bareTargetFileName) {
-		DeleteFile(bareTargetFileName)
-	}
 	// Since Windows is case insensitive we check if the names are identical, we
 	// give the file a temporary name before we request to rename it properly.
 	if runtime.GOOS == "windows" && strings.ToLower(bareSourceFileName) == strings.ToLower(bareTargetFileName) {
@@ -531,6 +528,10 @@ func RenameFile(sourceFileName string, targetFileName string) error {
 		}
 		err = os.Rename(bareTargetFileName + ".tmp", bareTargetFileName)
 		return err
+	}
+	// This needs to be here to avoid deleting target files on Windows before a case-insensitive check is done.
+	if IsFileExists(bareTargetFileName) {
+		DeleteFile(bareTargetFileName)
 	}
 	err = os.Rename(bareSourceFileName, bareTargetFileName)
 	return err
