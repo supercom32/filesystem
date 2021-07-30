@@ -215,14 +215,18 @@ func GetFileContents(fileName string) ([]byte, error) {
 DownloadFile allows you to download a file from the internet to your local file
 system.
 */
-func DownloadFile(url string, filepath string) error {
+func DownloadFile(url string, filepath string, header http.Header) error {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
-	// Here we provide a fake 'user-agent' value so that our request looks like it's from a browser.
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0")
+	if header == nil {
+		// Here we provide a fake 'user-agent' value so that our request looks like it's from a browser.
+		req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0")
+	} else {
+		req.Header = header
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

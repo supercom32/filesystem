@@ -2,6 +2,7 @@ package filesystem
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"strings"
 	"testing"
 )
@@ -82,9 +83,17 @@ func TestDeleteDirectory(test *testing.T) {
 }
 
 func TestDownloadFile(test *testing.T) {
-	err := DownloadFile("https://bad_url", "/tmp/download.txt")
+	err := DownloadFile("https://bad_url", "/tmp/download.txt", nil)
 	assert.Errorf(test, err, "An error was expected to be generated when a bad URL is used!")
-	err = DownloadFile("https://www.google.ca", "/tmp/index.html")
+	err = DownloadFile("https://www.google.ca", "/tmp/index.html", nil)
+	assert.NoErrorf(test, err, "An error was not expected to be generated when downloading!")
+	err = DownloadFile("https://www.google.ca", "/tmp/index.html", nil)
+	assert.NoErrorf(test, err, "An error was not expected to be generated when downloading!")
+	var header http.Header
+	header = make(http.Header)
+	header.Set("User-Agent", "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0")
+	header.Set("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+	err = DownloadFile("https://www.google.ca", "/tmp/index.html", header)
 	assert.NoErrorf(test, err, "An error was not expected to be generated when downloading!")
 }
 
