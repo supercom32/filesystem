@@ -183,13 +183,13 @@ contents of a file into memory, it should only be used for smaller files.
 func FindReplaceInFile(filename string, regexMatcher string, replacementValue string) error {
 	fileContents, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	regex := regexp.MustCompile(regexMatcher)
 	newContents := regex.ReplaceAll(fileContents, []byte(replacementValue))
 	err = ioutil.WriteFile(filename, newContents, 0)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	return err
 }
