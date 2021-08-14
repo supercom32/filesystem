@@ -14,6 +14,20 @@ func TestGetCurrentDirectory(test *testing.T) {
 	assert.Equalf(test, expectedResult, obtainedResult, "The current directory was not as expected.")
 }
 
+func TestIsFileContainsText(test *testing.T) {
+	fileName := "/tmp/testDocument.txt"
+	if IsFileExists(fileName) {
+		DeleteFile(fileName)
+	}
+	AppendLineToFile(fileName, "This is a first test line\n", 0)
+	AppendLineToFile(fileName, "This is a second test line\n", 0)
+	AppendLineToFile(fileName, "This is a third test line\n", 0)
+	AppendLineToFile(fileName, "This is a -forth- test line\n", 0)
+	expectedResult := true
+	obtainedResult, _ := IsFileContainsText(fileName,".*second.*")
+	assert.Equalf(test, expectedResult, obtainedResult, "The word 'second' was expected to be found in the file.")
+}
+
 func TestFindReplaceInFile(test *testing.T) {
 	fileName := "/tmp/testDocument.txt"
 	if IsFileExists(fileName) {

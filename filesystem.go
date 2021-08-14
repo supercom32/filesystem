@@ -177,6 +177,23 @@ func (shared *fileInstanceType) RemoveFirstLine() error{
 }
 
 /*
+IsFileContainsText allows you to check if a file contains a matching string or not. Since this method loads the entire
+contents of a file into memory, it should only be used for smaller files.
+*/
+func IsFileContainsText(filename string, regexMatcher string) (bool, error) {
+	fileContents, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return false, err
+	}
+	regex := regexp.MustCompile(regexMatcher)
+	match := regex.Find(fileContents)
+	if len(match) > 0 {
+		return true, err
+	}
+	return false, err
+}
+
+/*
 FindReplaceInFile allows you to find and replace text from within a file. Since this method loads the entire
 contents of a file into memory, it should only be used for smaller files.
 */
