@@ -272,10 +272,11 @@ func CopyFile(sourceFile string, destinationFile string) error {
 		return fmt.Errorf("%s is not a regular file.", sourceFile)
 	}
 	source, err := os.Open(sourceFile)
+	defer source.Close()
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+
 	destination, err := os.Create(destinationFile)
 	if err != nil {
 		return err
@@ -360,6 +361,7 @@ IsDirectory allows you to check if a disk entry is a directory or not.
 */
 func IsDirectory(directoryPath string) bool {
 	file, err := os.Open(directoryPath)
+	defer file.Close()
 	if err != nil {
 		return false
 	}
@@ -475,10 +477,10 @@ IsDirectoryEmpty allows you to detect if a directory is empty or not.
 */
 func IsDirectoryEmpty(directoryName string) (bool, error) {
 	file, err := os.Open(directoryName)
+	defer file.Close()
 	if err != nil {
 		return false, err
 	}
-	defer file.Close()
 	_, err = file.Readdirnames(1)
 	if err == io.EOF {
 		return true, nil
