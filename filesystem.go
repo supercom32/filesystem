@@ -345,7 +345,7 @@ GetListOfFiles allows you to obtain a list of files that match a given regular
 expression.
 */
 func GetListOfFiles(directoryPath string, regexMatcher string) ([]string, error) {
-	return GetListOfDirectoryContents(directoryPath, regexMatcher,true, false)
+	return GetListOfDirectoryContents(directoryPath, []string{regexMatcher},true, false)
 }
 
 /**
@@ -353,7 +353,7 @@ GetListOfDirectories allows you to obtain a list of files that match a given
 regular expression.
 */
 func GetListOfDirectories(directoryPath string, regexMatcher string) ([]string, error) {
-	return GetListOfDirectoryContents(directoryPath, regexMatcher, false, true)
+	return GetListOfDirectoryContents(directoryPath, []string{regexMatcher}, false, true)
 }
 
 /*
@@ -376,7 +376,7 @@ func IsDirectory(directoryPath string) bool {
 GetListOfDirectoryContents allows you to obtain a list of files and directories
 that match a given regular expression.
 */
-func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFilesIncluded bool, isDirectoriesIncluded bool) ([]string, error) {
+func GetListOfDirectoryContents(directoryPath string, regexMatchers []string, isFilesIncluded bool, isDirectoriesIncluded bool) ([]string, error) {
 	var fileList []string
 	bareDirectoryPath := GetBareDirectoryPath(directoryPath)
 	files, err := ioutil.ReadDir(bareDirectoryPath)
@@ -384,14 +384,18 @@ func GetListOfDirectoryContents(directoryPath string, regexMatcher string, isFil
 		return fileList, err
 	}
 	for _, file := range files {
-		regex := regexp.MustCompile(regexMatcher)
-		match := regex.FindStringSubmatch(file.Name())
-		if len(match) > 0 {
-			if file.IsDir() && isDirectoriesIncluded {
-				fileList = append(fileList, file.Name() + "/")
-			}
-			if !file.IsDir() && isFilesIncluded {
-				fileList = append(fileList, file.Name())
+		for _, currentRegex := range regexMatchers {
+			regex := regexp.MustCompile(currentRegex)
+			match := regex.FindStringSubmatch(file.Name())
+			if len(match) > 0 {
+				if file.IsDir() && isDirectoriesIncluded {
+					fileList = append(fileList, file.Name() + "/")
+					break;
+				}
+				if !file.IsDir() && isFilesIncluded {
+					fileList = append(fileList, file.Name())
+					break;
+				}
 			}
 		}
 	}
@@ -403,7 +407,7 @@ FindMatchingContent allows you to find matching content from a given directory
 path. Both shallow and recursive searches are supported and results are
 returned as a fully qualified path.
 */
-func FindMatchingContent(directoryPath string, regexMatcher string, isFilesIncluded bool, isDirectoriesIncluded bool, isRecursive bool) ([]string, error) {
+func FindMatchingContent(directoryPath string, regexMatchers []string, isFilesIncluded bool, isDirectoriesIncluded bool, isRecursive bool) ([]string, error) {
 	var err error
 	var listOfContents []string
 	if isRecursive {
@@ -416,7 +420,7 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 					return nil
 				}
 				normalizedPath := GetNormalizedDirectoryPath(path)
-				matchingContents, err := GetListOfDirectoryContents(normalizedPath, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
+				matchingContents, err := GetListOfDirectoryContents(normalizedPath, regexMatchers, isFilesIncluded, isDirectoriesIncluded)
 				if err != nil {
 					return err
 				}
@@ -425,7 +429,7 @@ func FindMatchingContent(directoryPath string, regexMatcher string, isFilesInclu
 				return nil
 			})
 	} else {
-		matchingContent, err := GetListOfDirectoryContents(directoryPath, regexMatcher, isFilesIncluded, isDirectoriesIncluded)
+		matchingContent, err := GetListOfDirectoryContents(directoryPath, regexMatchers, isFilesIncluded, isDirectoriesIncluded)
 		if err != nil {
 			return listOfContents, err
 		}

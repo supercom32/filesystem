@@ -284,16 +284,16 @@ func TestGetNormalizedDirectoryPath(test *testing.T) {
 
 func TestFindMatchingContent(test *testing.T) {
 	sourceDirectory := "/tmp/"
-	_, err := FindMatchingContent(sourceDirectory, ".*", false, true, true)
+	_, err := FindMatchingContent(sourceDirectory, []string{"should_never_match", ".*"}, false, true, true)
 	assert.NoErrorf(test, err, "An error was not expected when trying to search the contents of a directory!")
 
-	_, err = FindMatchingContent(sourceDirectory, ".*", true, false, false)
+	_, err = FindMatchingContent(sourceDirectory, []string{"should_never_match",".*"}, true, false, false)
 	assert.NoErrorf(test, err, "An error was not expected when trying to search the contents of a directory!")
 }
 
 func TestGetListOfDirectoryContents(test *testing.T) {
 	sourceDirectory := "/tmp/"
-	_, err := GetListOfDirectoryContents(sourceDirectory, ".*", true, true)
+	_, err := GetListOfDirectoryContents(sourceDirectory, []string{".*"}, true, true)
 	assert.NoErrorf(test, err, "An error was not expected when trying to list the contents of a directory!")
 }
 
