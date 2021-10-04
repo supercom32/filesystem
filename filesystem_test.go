@@ -282,6 +282,11 @@ func TestGetNormalizedDirectoryPath(test *testing.T) {
 	assert.Equalf(test, expectedValue, obtainedValue, "The directory path was not normalized as expected!")
 }
 
+func TestGetDefaultCacheDirectory(test *testing.T) {
+	_, err := GetDefaultCacheDirectory()
+	assert.NoErrorf(test, err, "An error was not expected when trying to detect the default cache directory!")
+}
+
 func TestFindMatchingContent(test *testing.T) {
 	sourceDirectory := "/tmp/"
 	_, err := FindMatchingContent(sourceDirectory, []string{"should_never_match", ".*"}, false, true, true)
