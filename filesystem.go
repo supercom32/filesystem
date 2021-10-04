@@ -2,6 +2,7 @@ package filesystem
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -174,6 +175,28 @@ func (shared *fileInstanceType) RemoveFirstLine() error{
 		return err
 	}
 	return nil
+}
+
+/*
+GetDefaultCacheDirectory allows you to obtain the cache directory of a user.
+The cache directory is useful for storing program data that needs to
+be accessed frequently, but is not terribly important in case it has to be
+regenerated.
+*/
+func GetDefaultCacheDirectory() (string, error) {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("could not get user home directory: %v", err)
+	}
+	switch runtime.GOOS {
+	case "linux":
+		return filepath.Join(userHomeDir, ".cache"), nil
+	case "windows":
+		return filepath.Join(userHomeDir, "AppData", "Local"), nil
+	case "darwin":
+		return filepath.Join(userHomeDir, "Library", "Caches"), nil
+	}
+	return "", errors.New("could not determine cache directory")
 }
 
 /*
