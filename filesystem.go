@@ -405,7 +405,7 @@ func GetListOfDirectoryContents(directoryPath string, regexMatchers []string, is
 /**
 FindMatchingContent allows you to find matching content from a given directory
 path. Both shallow and recursive searches are supported and results are
-returned as a fully qualified path.
+returned as a fully qualified path. In the event an error occurs, matching will stop.
 */
 func FindMatchingContent(directoryPath string, regexMatchers []string, isFilesIncluded bool, isDirectoriesIncluded bool, isRecursive bool) ([]string, error) {
 	var err error
