@@ -98,11 +98,11 @@ func (shared *fileInstanceType) GetFileContents() ([]byte, error) {
 		return nil, err
 	}
 	buffer := make([]byte, fileInfo.Size())
-	formattedBuffer := bytes.TrimRight(buffer, "\n")
-	_, err = shared.fileDescriptor.ReadAt(formattedBuffer, 0)
+	_, err = shared.fileDescriptor.ReadAt(buffer, 0)
 	if err != nil {
 		return nil, err
 	}
+	formattedBuffer := bytes.TrimRight(buffer, "\n")
 	return formattedBuffer, err
 }
 

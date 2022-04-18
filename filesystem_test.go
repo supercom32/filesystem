@@ -172,7 +172,7 @@ func TestGetFileContents(test *testing.T) {
 	if err != nil {
 		assert.NoErrorf(test, err, "An error was not expected when reading a file.")
 	}
-	assert.Equalf(test, "First written line.\nSecond written line.\nThird written line.\n", string(fileContents), "The text file was expected to be a size it wasn't.")
+	assert.Equalf(test, "First written line.\nSecond written line.\nThird written line.", string(fileContents), "The text file was expected to be a size it wasn't.")
 }
 func TestPopLineFromStack(test *testing.T) {
 	var file fileInstanceType
