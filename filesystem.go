@@ -252,6 +252,23 @@ func GetFileContents(fileName string) ([]byte, error) {
 	return fileContents, err
 }
 
+/*
+RemoveFirstLineFromFile allows you to remove the first line from a file.
+*/
+func RemoveFirstLineFromFile(fileName string) (error) {
+	file := GetFileInstance()
+	err := file.Open(fileName, 0)
+	if err != nil {
+		return err
+	}
+	err = file.RemoveFirstLine()
+	if err != nil {
+		return err
+	}
+	file.Close()
+	return err
+}
+
 /**
 DownloadFile allows you to download a file from the internet to your local file
 system.
