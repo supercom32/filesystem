@@ -133,7 +133,6 @@ func (shared *fileInstanceType) GetFirstLine() ([]byte, error) {
 	}
 	return firstLine[:len(firstLine) - 1], err // Remove trailing delimiter "\n"
 }
-
 /*
 RemoveFirstLine allows you to remove the first line from a text file.
 */
@@ -233,6 +232,18 @@ func FindReplaceInFile(filename string, regexMatcher string, replacementValue st
 		return err
 	}
 	return err
+}
+
+/*
+GetLastLineFromFile allows you to obtain the last line from a file.
+*/
+func GetLastLineFromFile(fileName string) (string, error) {
+	fileContents, err := GetFileContents(fileName)
+	if err != nil {
+		return "", err
+	}
+	arrayOfLines := strings.Split(string(fileContents), "\n")
+	return arrayOfLines[len(arrayOfLines) - 1], err
 }
 
 /*
