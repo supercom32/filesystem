@@ -6,6 +6,22 @@ import (
 	"strings"
 	"testing"
 )
+const (
+	TEST_DIRECTORY = "/tmp/test_directory/"
+	TEST_SUB_DIRECTORY = "/tmp/test_directory/sub_directory/"
+)
+
+func setupTestStructure() {
+	DeleteDirectory(TEST_DIRECTORY)
+	CreateDirectory(TEST_DIRECTORY, 0)
+	AppendLineToFile("TestFile1.txt", "", 0)
+	AppendLineToFile("TestFile2.txt", "", 0)
+	AppendLineToFile("TestFile3.txt", "", 0)
+	CreateDirectory(TEST_SUB_DIRECTORY, 0)
+	AppendLineToFile(TEST_SUB_DIRECTORY + "subFile.zip", "", 0)
+	AppendLineToFile(TEST_SUB_DIRECTORY + "subFile.rar", "", 0)
+	AppendLineToFile(TEST_SUB_DIRECTORY + "subFile.arj", "", 0)
+}
 
 func TestGetCurrentDirectory(test *testing.T) {
 	directory := "/tmp/directory1/directory2/This is a directory with spaces and . seperation"
@@ -138,7 +154,7 @@ func TestGetLinesFromFile(test *testing.T) {
 	if err != nil {
 		assert.NoErrorf(test, err, "An error was not expected when getting lines from a file.")
 	}
-	assert.Equalf(test,"First written line.\nSecond written line.\nThird written line.\n", string(fileContents), "The text file was expected to be a size it wasn't.")
+	assert.Equalf(test,"First written line.\nSecond written line.\nThird written line.", string(fileContents), "The text file was expected to be a size it wasn't.")
 }
 
 func TestRemoveFirstLineFromFile(test *testing.T) {
@@ -343,18 +359,22 @@ func TestGetDefaultCacheDirectory(test *testing.T) {
 }
 
 func TestFindMatchingContent(test *testing.T) {
-	sourceDirectory := "/tmp/"
-	_, err := FindMatchingContent(sourceDirectory, []string{"should_never_match", ".*"}, false, true, true)
+	setupTestStructure()
+	sourceDirectory := TEST_DIRECTORY
+	filesFound, err := GetListOfDirectoryContents(sourceDirectory, []string{"should_never_match", ".*"}, false, true)
 	assert.NoErrorf(test, err, "An error was not expected when trying to search the contents of a directory!")
+	assert.Equal(test, 2, len(filesFound), "The number of files found was not as expected!")
 
-	_, err = FindMatchingContent(sourceDirectory, []string{"should_never_match",".*"}, true, false, false)
+	filesFound, err = GetListOfDirectoryContents(sourceDirectory, []string{"\\.arj", "\\.zip"}, true, true)
 	assert.NoErrorf(test, err, "An error was not expected when trying to search the contents of a directory!")
+	assert.Equal(test, 2, len(filesFound), "The number of files found was not as expected!")
 }
 
 func TestGetListOfDirectoryContents(test *testing.T) {
 	sourceDirectory := "/tmp/"
-	_, err := GetListOfDirectoryContents(sourceDirectory, []string{".*"}, true, true)
+	fileList, err := GetListOfDirectoryContents(sourceDirectory, []string{".*\\.srt"}, true, true)
 	assert.NoErrorf(test, err, "An error was not expected when trying to list the contents of a directory!")
+	assert.NotEqual(test, len(fileList), 0, "The number of files found was 0 when it wasn't expected!")
 }
 
 func TestIsDirectoryEmpty(test *testing.T) {
