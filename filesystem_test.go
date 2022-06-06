@@ -141,6 +141,36 @@ func TestGetLinesFromFile(test *testing.T) {
 	assert.Equalf(test,"First written line.\nSecond written line.\nThird written line.\n", string(fileContents), "The text file was expected to be a size it wasn't.")
 }
 
+func TestGetLastLineFromFile(test *testing.T) {
+	var file fileInstanceType
+	filename := "/tmp/file.txt"
+	if IsFileExists(filename) {
+		DeleteFile(filename)
+	}
+	err := file.Open(filename, 0)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when opening a file.")
+	}
+	err = file.WriteLine("First written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	err = file.WriteLine("Second written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	err = file.WriteLine("Third written line.")
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when writing lines to a file.")
+	}
+	file.Close()
+	fileContents, err := GetLastLineFromFile(filename)
+	if err != nil {
+		assert.NoErrorf(test, err, "An error was not expected when getting lines from a file.")
+	}
+	assert.Equalf(test,"Third written line.", string(fileContents), "The text file was expected to be a size it wasn't.")
+}
+
 func TestRemoveFirstLineFromFile(test *testing.T) {
 	filename := "/tmp/file.txt"
 	if IsFileExists(filename) {

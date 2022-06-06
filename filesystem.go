@@ -236,6 +236,18 @@ func FindReplaceInFile(filename string, regexMatcher string, replacementValue st
 }
 
 /*
+GetLastLineFromFile allows you to obtain the last line from a file.
+*/
+func GetLastLineFromFile(fileName string) (string, error) {
+	fileContents, err := GetFileContents(fileName)
+	if err != nil {
+		return "", err
+	}
+	arrayOfLines := strings.Split(string(fileContents), "\n")
+	return arrayOfLines[len(arrayOfLines) - 1], err
+}
+
+/*
 GetFileContents allows you to get the entire contents of a file.
 */
 func GetFileContents(fileName string) ([]byte, error) {
