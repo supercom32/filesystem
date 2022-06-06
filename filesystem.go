@@ -418,29 +418,66 @@ GetListOfDirectoryContents allows you to obtain a list of files and directories
 that match a given regular expression.
 */
 func GetListOfDirectoryContents(directoryPath string, regexMatchers []string, isFilesIncluded bool, isDirectoriesIncluded bool) ([]string, error) {
-	var files []string
+	var fileList []string
 	bareDirectoryPath := GetBareDirectoryPath(directoryPath)
-	if !IsDirectoryExists(bareDirectoryPath) {
-		return files, errors.New("the directory specified does not exist")
+	files, err := ioutil.ReadDir(bareDirectoryPath)
+	if err != nil {
+		return fileList, err
 	}
-	filepath.Walk(bareDirectoryPath, func(path string, file os.FileInfo, _ error) error {
+	for _, file := range files {
 		for _, currentRegex := range regexMatchers {
 			regex := regexp.MustCompile(currentRegex)
 			match := regex.FindStringSubmatch(file.Name())
 			if len(match) > 0 {
 				if file.IsDir() && isDirectoriesIncluded {
-					files = append(files, path + "/")
+					fileList = append(fileList, file.Name() + "/")
 					break;
 				}
 				if !file.IsDir() && isFilesIncluded {
-					files = append(files, path)
+					fileList = append(fileList, file.Name())
 					break;
 				}
 			}
 		}
-		return nil
-	})
-	return files, nil
+	}
+	return fileList, err
+}
+
+/**
+FindMatchingContent allows you to find matching content from a given directory
+path. Both shallow and recursive searches are supported and results are
+returned as a fully qualified path.
+*/
+func FindMatchingContent(directoryPath string, regexMatchers []string, isFilesIncluded bool, isDirectoriesIncluded bool, isRecursive bool) ([]string, error) {
+	var err error
+	var listOfContents []string
+	if isRecursive {
+		err = filepath.Walk(directoryPath,
+			func(path string, fileInfo os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if !IsDirectory(path) {
+					return nil
+				}
+				normalizedPath := GetNormalizedDirectoryPath(path)
+				matchingContents, err := GetListOfDirectoryContents(normalizedPath, regexMatchers, isFilesIncluded, isDirectoriesIncluded)
+				if err != nil {
+					return err
+				}
+				matchingContents = addPrefixToStrings(normalizedPath, matchingContents)
+				listOfContents = append(listOfContents, matchingContents...)
+				return nil
+			})
+	} else {
+		matchingContent, err := GetListOfDirectoryContents(directoryPath, regexMatchers, isFilesIncluded, isDirectoriesIncluded)
+		if err != nil {
+			return listOfContents, err
+		}
+		normalizedPath := GetNormalizedDirectoryPath(directoryPath)
+		listOfContents = addPrefixToStrings(normalizedPath, matchingContent)
+	}
+	return listOfContents, err
 }
 
 /**
