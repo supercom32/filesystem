@@ -14,7 +14,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -964,68 +963,63 @@ func IsFile(path string) (bool, error) {
 }
 
 /*
-RunCommandWithoutBlocking allows you to run a command without blocking execution. This is accomplished by returning
-a pointer to the command output as well as a channel to signify when execution has completed.
-This function properly handles UTF-8 encoded text in command output.
+RunCommandWithoutBlocking is a method which allows you to run an external command without blocking the caller. The
+command is started immediately, and its completion is reported through the returned channels so that the caller can
+keep doing other work, such as updating a progress bar, while it runs. In addition, the following should be noted:
+
+  - Once the done channel is closed, the error channel never blocks. A receive returns the error that ended the command,
+    such as the '*exec.ExitError' for a non-zero exit status or the error from failing to start it, or returns nil,
+    because the channel has been closed, when the command succeeded.
+
+  - Callers must not treat a closed done channel as success on its own. Since a select statement chooses randomly
+    between ready cases, the error channel must always be read after the done channel closes.
+
+  - The returned output pointer holds the combined standard output and standard error of the command, and is only
+    filled in once the done channel has been closed. It must not be read before then.
+
+  - An empty argument list is reported as an error through the error channel instead of causing a panic.
+
+:param commandLineArguments: The executable to run followed by each of its arguments.
+:return: A pointer to the combined command output, a channel which is closed when the command has finished, and a
+channel which yields at most one error before being closed.
+
+Example:
+
+	_, isDoneChannel, errorChannel := RunCommandWithoutBlocking("ffmpeg", "-i", "input.ts", "output.mkv")
+	<-isDoneChannel
+	if err := <-errorChannel; err != nil {
+		return err
+	}
 */
 func RunCommandWithoutBlocking(commandLineArguments ...string) (*string, <-chan struct{}, <-chan error) {
-	cmd := exec.Command(commandLineArguments[0], commandLineArguments[1:]...)
-	var cmdOutput bytes.Buffer
-	cmd.Stdout = &cmdOutput
-	cmd.Stderr = &cmdOutput
-	var outputBuffer bytes.Buffer
+	commandOutput := new(string)
 	isExecutionDoneChannel := make(chan struct{})
-	errorChannel := make(chan error, 1) // Buffered channel to avoid goroutine leak
-	if err := cmd.Start(); err != nil {
+	errorChannel := make(chan error, 1)
+	finishExecution := func(err error) {
+		if err != nil {
+			errorChannel <- err
+		}
+		close(errorChannel)
 		close(isExecutionDoneChannel)
-		errorChannel <- err // Send error to the channel
-		return nil, nil, errorChannel
+	}
+	if len(commandLineArguments) == 0 {
+		finishExecution(errors.New("no command was specified to run"))
+		return commandOutput, isExecutionDoneChannel, errorChannel
+	}
+	var outputBuffer bytes.Buffer
+	cmd := exec.Command(commandLineArguments[0], commandLineArguments[1:]...)
+	cmd.Stdout = &outputBuffer
+	cmd.Stderr = &outputBuffer
+	if err := cmd.Start(); err != nil {
+		finishExecution(err)
+		return commandOutput, isExecutionDoneChannel, errorChannel
 	}
 	go func() {
-		if err := cmd.Wait(); err != nil {
-			close(isExecutionDoneChannel)
-			errorChannel <- err // Send error to the channel
-			return
-		}
-		close(isExecutionDoneChannel)
+		err := cmd.Wait()
+		*commandOutput = outputBuffer.String()
+		finishExecution(err)
 	}()
-
-	// Use a mutex to protect concurrent access to the output buffer
-	var outputMutex sync.Mutex
-
-	go func() {
-		// Use a reader that preserves the original bytes including line endings
-		reader := bufio.NewReader(&cmdOutput)
-		for {
-			line, err := reader.ReadBytes('\n')
-			if err != nil && err != io.EOF {
-				break
-			}
-
-			if len(line) > 0 {
-				outputMutex.Lock()
-				outputBuffer.Write(line)
-				outputMutex.Unlock()
-			}
-
-			if err == io.EOF {
-				break
-			}
-		}
-	}()
-
-	// Wait for command to finish
-	go func() {
-		<-isExecutionDoneChannel
-		// If the command exits with a non-zero status, return an error
-		if cmd.ProcessState != nil && !cmd.ProcessState.Success() {
-			errorChannel <- fmt.Errorf("%d", cmd.ProcessState.ExitCode())
-		}
-	}()
-
-	// Convert buffer to string and return a pointer to it
-	commandOutput := outputBuffer.String()
-	return &commandOutput, isExecutionDoneChannel, errorChannel
+	return commandOutput, isExecutionDoneChannel, errorChannel
 }
 
 func RunCommand(commandLineArguments ...string) (string, error) {
