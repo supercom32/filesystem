@@ -35,7 +35,7 @@ Open allows you to access a file on the file system in the open state.
 */
 func (shared *fileInstanceType) Open(fileName string, permissions int) error {
 	if permissions == 0 {
-		permissions = 0644
+		permissions = 0744
 	}
 	perm := os.FileMode(uint32(permissions))
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, perm)
@@ -402,7 +402,7 @@ In addition, the following information should be noted:
 - In the event the file does not already exist, it will be created for you
 with the permission attributes provided.
 
-- If you pass in a permissions value of '0', the default value of 666 will
+- If you pass in a permissions value of '0', the default value of 744 will
 be used instead.
 */
 func WriteBytesToFile(fileName string, bytesToWrite []byte, permissions int) error {
@@ -437,12 +437,12 @@ In addition, the following information should be noted:
 - In the event the file does not already exist, it will be created for you
 with the permission attributes provided.
 
-- If you pass in a permissions value of '0', the default value of 666 will
+- If you pass in a permissions value of '0', the default value of 744 will
 be used instead.
 */
 func AppendLineToFile(fileName string, lineToWrite string, permissions int) error {
 	if permissions == 0 {
-		permissions = 0644
+		permissions = 0744
 	}
 	perm := os.FileMode(uint32(permissions))
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, perm)
@@ -1043,4 +1043,16 @@ func RunCommand(commandLineArguments ...string) (string, error) {
 		return "", errors.New(errMsg)
 	}
 	return stdout.String(), nil
+}
+
+/*
+GetAbsolutePathToExecutableLocation allows you to obtain an absolute path to your currently running executable.
+*/
+func GetAbsolutePathToExecutableLocation() (string, error) {
+	executablePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	executableDir := filepath.Dir(executablePath)
+	return executableDir, nil
 }
